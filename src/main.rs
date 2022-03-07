@@ -1,12 +1,15 @@
 use clap::Parser;
 use std::boxed::Box;
 
-use reqwest;
-
+use reqwest::{self, StatusCode};
 use std::fs::File;
 use std::io::prelude::*; // we need that for BufReader lines
 use std::io::{BufReader, Error};
+//use url::Url;
 
+use term_table::row::Row;
+use term_table::table_cell::{Alignment, TableCell};
+use term_table::Table;
 /*
 TODO:
 - add IP to cli arguments
@@ -23,15 +26,42 @@ TODO:
 
 fn main() {
     let args = Cli::parse();
-    let path = &args.wordlist;
-    let ip = &args.ip;
-    let _connection = http_request(ip);
-    let _wordlist = open_wordlist(path).unwrap();
+    let path = args.wordlist;
+    let url = args.url;
+    let mut table = Table::new();
+    table.add_row(Row::new(vec![
+        TableCell::new_with_alignment(r#" 
+        
+                                /$$                                    /$$$$$$                            
+                               | $$                                   /$$__  $$                           
+ /$$$$$$   /$$   /$$  /$$$$$$$/$$$$$$   /$$   /$$                    | $$  \__/$$   /$$ /$$$$$$$$/$$$$$$$$
+/$$__  $$ | $$  | $$ /$$_____/_  $$_/  | $$  | $$       /$$$$$$      | $$$$  | $$  | $$|____ /$$/____ /$$/
+| $$  \__/| $$  | $$|  $$$$$$  | $$    | $$  | $$      |______/      | $$_/  | $$  | $$   /$$$$/   /$$$$/ 
+| $$      | $$  | $$ \____  $$ | $$ /$$| $$  | $$                    | $$    | $$  | $$  /$$__/   /$$__/  
+| $$      |  $$$$$$/ /$$$$$$$/ |  $$$$/|  $$$$$$$                    | $$    |  $$$$$$/ /$$$$$$$$/$$$$$$$$
+|__/       \______/ |_______/   \___/   \____  $$                    |__/     \______/ |________/________/
+                                        /$$  | $$                                                         
+                                       |  $$$$$$/                                                         
+                                        \______/"#, 2, Alignment::Left)]));
+
+    let wordlist = open_wordlist(&path).unwrap();
+    for line in wordlist {
+        let response = http_request(format!("{}{}", &url, line)).unwrap();
+        match response.status() {
+            StatusCode::NOT_FOUND => (),
+            _ => table.add_row(Row::new(vec![
+                TableCell::new_with_alignment(response.url(), 1, Alignment::Left),
+                TableCell::new_with_alignment(response.status(), 1, Alignment::Right),
+            ])),
+        }
+    }
+    println!("{}", table.render());
 }
 #[derive(Parser)]
 pub struct Cli {
     wordlist: String,
-    ip: String,
+    #[clap(short, long)]
+    url: String,
 }
 
 fn open_wordlist(path: &str) -> Result<Box<impl Iterator<Item = String>>, Error> {
@@ -42,10 +72,7 @@ fn open_wordlist(path: &str) -> Result<Box<impl Iterator<Item = String>>, Error>
     Ok(Box::new(reader))
 }
 
-fn http_request(ip: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let uri = format!("http://{}", ip);
-    println!("{}", uri);
-    let resp = reqwest::blocking::get(uri)?;
-    println!("{:#?}", resp.status());
-    Ok(())
+fn http_request(url: String) -> Result<reqwest::blocking::Response, Box<dyn std::error::Error>> {
+    let resp = reqwest::blocking::get(url)?;
+    Ok(resp)
 }
