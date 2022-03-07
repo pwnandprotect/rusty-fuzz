@@ -1,33 +1,71 @@
 use clap::Parser;
 use std::boxed::Box;
 
-use reqwest::{self, StatusCode};
+use reqwest::{self, StatusCode, Url};
 use std::fs::File;
 use std::io::prelude::*; // we need that for BufReader lines
 use std::io::{BufReader, Error};
 //use url::Url;
-
 use term_table::row::Row;
 use term_table::table_cell::{Alignment, TableCell};
 use term_table::Table;
+use tokio;
 /*
 TODO:
-- add IP to cli arguments
-- make sync request to IP / url
-- take response status code
-- check if response status code is within the list of allowed status codes?
-- create cli table
-- make async via tokio
-- add thread limits
+- add timestamps for start/finish
+- check if response status code is within the list of allowed status codes (200,201,204,301,302,307,401,403)?
+- make async via reqwest (or tokio?)
+- add thread limits + cli parameter
 - add extension cli parameter
 - use extension parameter to fuzz for files
-- define default wordlist
+- define default wordlist?
+    - package small wordlist with binary?
+- optional recursive flag + implementation
+- define timeout
+- define custom user agent?
 */
 
-fn main() {
+/*
+gobuster dir -u https://buffered.io -w ~/wordlists/shortlist.txt
+
+===============================================================
+Gobuster v3.1.0
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Mode         : dir
+[+] Url/Domain   : https://buffered.io/
+[+] Threads      : 10
+[+] Wordlist     : /home/oj/wordlists/shortlist.txt
+[+] Status codes : 200,204,301,302,307,401,403
+[+] User Agent   : gobuster/3.1.0
+[+] Timeout      : 10s
+===============================================================
+2019/06/21 11:49:43 Starting gobuster
+===============================================================
+/categories (Status: 301)
+/contact (Status: 301)
+/posts (Status: 301)
+/index (Status: 200)
+===============================================================
+2019/06/21 11:49:44 Finished
+===============================================================
+ */
+
+#[derive(Parser)]
+pub struct Cli {
+    #[clap(short, long)]
+    url: Url,
+    wordlist: String,
+    #[clap(short, long, default_value_t = 30)]
+    threads: u32,
+}
+
+#[tokio::main]
+async fn main() {
     let args = Cli::parse();
-    let path = args.wordlist;
-    let url = args.url;
+    let path = &args.wordlist;
+    let url = &args.url;
+    let _threads = &args.threads;
     let mut table = Table::new();
     table.add_row(Row::new(vec![
         TableCell::new_with_alignment(r#" 
@@ -45,22 +83,17 @@ fn main() {
 
     let wordlist = open_wordlist(&path).unwrap();
     for line in wordlist {
-        let response = http_request(format!("{}{}", &url, line)).unwrap();
+        let response = http_request(&url.join(&line).unwrap()).await.unwrap();
+        //println!("{}", response.status());
         match response.status() {
             StatusCode::NOT_FOUND => (),
             _ => table.add_row(Row::new(vec![
-                TableCell::new_with_alignment(response.url(), 1, Alignment::Left),
+                TableCell::new_with_alignment(line, 1, Alignment::Left),
                 TableCell::new_with_alignment(response.status(), 1, Alignment::Right),
             ])),
         }
     }
     println!("{}", table.render());
-}
-#[derive(Parser)]
-pub struct Cli {
-    wordlist: String,
-    #[clap(short, long)]
-    url: String,
 }
 
 fn open_wordlist(path: &str) -> Result<Box<impl Iterator<Item = String>>, Error> {
@@ -71,7 +104,7 @@ fn open_wordlist(path: &str) -> Result<Box<impl Iterator<Item = String>>, Error>
     Ok(Box::new(reader))
 }
 
-fn http_request(url: String) -> Result<reqwest::blocking::Response, Box<dyn std::error::Error>> {
-    let resp = reqwest::blocking::get(url)?;
+async fn http_request(base_url: &Url) -> Result<reqwest::Response, Box<dyn std::error::Error>> {
+    let resp = reqwest::get(base_url.as_ref()).await?;
     Ok(resp)
 }
