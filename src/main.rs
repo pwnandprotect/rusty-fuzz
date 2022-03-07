@@ -31,7 +31,6 @@ fn main() {
     let mut table = Table::new();
     table.add_row(Row::new(vec![
         TableCell::new_with_alignment(r#" 
-        
                                 /$$                                    /$$$$$$                            
                                | $$                                   /$$__  $$                           
  /$$$$$$   /$$   /$$  /$$$$$$$/$$$$$$   /$$   /$$                    | $$  \__/$$   /$$ /$$$$$$$$/$$$$$$$$
@@ -42,7 +41,7 @@ fn main() {
 |__/       \______/ |_______/   \___/   \____  $$                    |__/     \______/ |________/________/
                                         /$$  | $$                                                         
                                        |  $$$$$$/                                                         
-                                        \______/"#, 2, Alignment::Left)]));
+                                        \______/                                                           "#, 2, Alignment::Left)]));
 
     let wordlist = open_wordlist(&path).unwrap();
     for line in wordlist {
