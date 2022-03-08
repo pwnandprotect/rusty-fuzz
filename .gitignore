@@ -1,3 +1,7 @@
-/target
-
+# build folder
+rusty_fuzz/target/
+rusty_fuzz_lib/target/
+# any of the testing wordlists
 *.txt
+
+Cargo.lock

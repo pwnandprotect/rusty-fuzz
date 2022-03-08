@@ -5,16 +5,17 @@ use reqwest::{self, StatusCode, Url};
 use std::fs::File;
 use std::io::prelude::*; // we need that for BufReader lines
 use std::io::{BufReader, Error};
+use std::time::Instant;
+
 //use url::Url;
+
 use term_table::row::Row;
 use term_table::table_cell::{Alignment, TableCell};
 use term_table::Table;
-use tokio;
+
 /*
 TODO:
-- add timestamps for start/finish
 - check if response status code is within the list of allowed status codes (200,201,204,301,302,307,401,403)?
-- make async via reqwest (or tokio?)
 - add thread limits + cli parameter
 - add extension cli parameter
 - use extension parameter to fuzz for files
@@ -53,11 +54,9 @@ by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
 
 #[derive(Parser)]
 pub struct Cli {
-    #[clap(short, long)]
     url: Url,
     wordlist: String,
-    #[clap(short, long, default_value_t = 30)]
-    threads: u32,
+    // threads: u32,
 }
 
 #[tokio::main]
@@ -65,21 +64,29 @@ async fn main() {
     let args = Cli::parse();
     let path = &args.wordlist;
     let url = &args.url;
-    let _threads = &args.threads;
+    // let _threads = &args.threads;
+
     let mut table = Table::new();
     table.add_row(Row::new(vec![
-        TableCell::new_with_alignment(r#" 
-                                /$$                                    /$$$$$$                            
-                               | $$                                   /$$__  $$                           
- /$$$$$$   /$$   /$$  /$$$$$$$/$$$$$$   /$$   /$$                    | $$  \__/$$   /$$ /$$$$$$$$/$$$$$$$$
-/$$__  $$ | $$  | $$ /$$_____/_  $$_/  | $$  | $$       /$$$$$$      | $$$$  | $$  | $$|____ /$$/____ /$$/
-| $$  \__/| $$  | $$|  $$$$$$  | $$    | $$  | $$      |______/      | $$_/  | $$  | $$   /$$$$/   /$$$$/ 
-| $$      | $$  | $$ \____  $$ | $$ /$$| $$  | $$                    | $$    | $$  | $$  /$$__/   /$$__/  
-| $$      |  $$$$$$/ /$$$$$$$/ |  $$$$/|  $$$$$$$                    | $$    |  $$$$$$/ /$$$$$$$$/$$$$$$$$
-|__/       \______/ |_______/   \___/   \____  $$                    |__/     \______/ |________/________/
-                                        /$$  | $$                                                         
-                                       |  $$$$$$/                                                         
-                                        \______/                                                           "#, 2, Alignment::Left)]));
+            TableCell::new_with_alignment(r#"
+                                    /$$                                    /$$$$$$                            
+                                   | $$                                   /$$__  $$                           
+     /$$$$$$   /$$   /$$  /$$$$$$$/$$$$$$   /$$   /$$                    | $$  \__/$$   /$$ /$$$$$$$$/$$$$$$$$
+    /$$__  $$ | $$  | $$ /$$_____/_  $$_/  | $$  | $$       /$$$$$$      | $$$$  | $$  | $$|____ /$$/____ /$$/
+    | $$  \__/| $$  | $$|  $$$$$$  | $$    | $$  | $$      |______/      | $$_/  | $$  | $$   /$$$$/   /$$$$/ 
+    | $$      | $$  | $$ \____  $$ | $$ /$$| $$  | $$                    | $$    | $$  | $$  /$$__/   /$$__/  
+    | $$      |  $$$$$$/ /$$$$$$$/ |  $$$$/|  $$$$$$$                    | $$    |  $$$$$$/ /$$$$$$$$/$$$$$$$$
+    |__/       \______/ |_______/   \___/   \____  $$                    |__/     \______/ |________/________/
+                                            /$$  | $$                                                          
+                                           |  $$$$$$/                                                          
+                                            \______/                                                          "#, 2, Alignment::Center)]));
+
+    let start = Instant::now();
+    table.add_row(Row::new(vec![TableCell::new_with_alignment(
+        format!("start: {:?}", start),
+        1,
+        Alignment::Left,
+    )]));
 
     let wordlist = open_wordlist(&path).unwrap();
     for line in wordlist {
@@ -87,12 +94,22 @@ async fn main() {
         //println!("{}", response.status());
         match response.status() {
             StatusCode::NOT_FOUND => (),
+
             _ => table.add_row(Row::new(vec![
-                TableCell::new_with_alignment(line, 1, Alignment::Left),
+                TableCell::new_with_alignment(response.url(), 1, Alignment::Left),
                 TableCell::new_with_alignment(response.status(), 1, Alignment::Right),
             ])),
+            // _ => println!("{} - {}", response.url(), response.status()),
         }
     }
+    let elapsed = start.elapsed();
+    // println!("{:?}", elapsed);
+
+    table.add_row(Row::new(vec![TableCell::new_with_alignment(
+        format!("duration: {:?}", elapsed),
+        1,
+        Alignment::Left,
+    )]));
     println!("{}", table.render());
 }
 
