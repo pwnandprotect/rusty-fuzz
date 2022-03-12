@@ -15,6 +15,8 @@ use term_table::Table;
 
 /*
 TODO:
+- combine lib and usage crates
+-
 - check if response status code is within the list of allowed status codes (200,201,204,301,302,307,401,403)?
 - add thread limits + cli parameter
 - add extension cli parameter
@@ -24,6 +26,7 @@ TODO:
 - optional recursive flag + implementation
 - define timeout
 - define custom user agent?
+- add progress bar or similar via indicatif
 */
 
 /*
@@ -67,8 +70,8 @@ async fn main() {
     // let _threads = &args.threads;
 
     let mut table = Table::new();
-    table.add_row(Row::new(vec![
-            TableCell::new_with_alignment(r#"
+    table.add_row(Row::new(vec![TableCell::new_with_alignment(
+        r#"
                                     /$$                                    /$$$$$$                            
                                    | $$                                   /$$__  $$                           
      /$$$$$$   /$$   /$$  /$$$$$$$/$$$$$$   /$$   /$$                    | $$  \__/$$   /$$ /$$$$$$$$/$$$$$$$$
@@ -79,7 +82,10 @@ async fn main() {
     |__/       \______/ |_______/   \___/   \____  $$                    |__/     \______/ |________/________/
                                             /$$  | $$                                                          
                                            |  $$$$$$/                                                          
-                                            \______/                                                          "#, 2, Alignment::Center)]));
+                                            \______/                                                          "#,
+        2,
+        Alignment::Center,
+    )]));
 
     let start = Instant::now();
     table.add_row(Row::new(vec![TableCell::new_with_alignment(
@@ -115,9 +121,7 @@ async fn main() {
 
 fn open_wordlist(path: &str) -> Result<Box<impl Iterator<Item = String>>, Error> {
     let file = File::open(path)?;
-    let reader = BufReader::new(file)
-        .lines()
-        .map(|line| line.unwrap_or_default());
+    let reader = BufReader::new(file).lines().map(|line| line.unwrap_or_default());
     Ok(Box::new(reader))
 }
 

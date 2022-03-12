@@ -1,12 +1,12 @@
 [package]
 name = "rusty_fuzz_lib"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 authors = ["maikroservice <maikroservice@gmail.com>"]
 description = "high performance forced directory browser utility library."
 readme = "README.md"
 license = "MIT"
-repository = "https://pwnandprotect/rusty_fuzz"
+repository = "https://github.com/pwnandprotect/rusty_fuzz"
 
 [lib]
 name = "rusty_fuzz_lib"
