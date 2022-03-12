@@ -1,6 +1,7 @@
 # build folder
 rusty_fuzz/target/
 rusty_fuzz_lib/target/
+target/
 # any of the testing wordlists
 *.txt
 

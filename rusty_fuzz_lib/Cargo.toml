@@ -2,7 +2,17 @@
 name = "rusty_fuzz_lib"
 version = "0.1.0"
 edition = "2021"
+authors = ["maikroservice <maikroservice@gmail.com>"]
+description = "high performance forced directory browser utility library."
+readme = "README.md"
+license = "MIT"
+repository = "https://pwnandprotect/rusty_fuzz"
+
+[lib]
+name = "rusty_fuzz_lib"
+path = "src/lib.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+addr = "0.15.3"
