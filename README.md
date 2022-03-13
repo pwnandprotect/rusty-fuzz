@@ -1,4 +1,4 @@
-# rusty_fuzz
+# RustyFuzz
 
 > TODO: fix readme with all the details + publish to crates.io
 

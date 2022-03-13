@@ -1,15 +1,15 @@
 [package]
-name = "rusty_fuzz_lib"
+name = "rustyfuzz_lib"
 version = "1.0.0"
 edition = "2021"
 authors = ["maikroservice <maikroservice@gmail.com>"]
 description = "high performance forced directory browser utility library."
 readme = "README.md"
 license = "MIT"
-repository = "https://github.com/pwnandprotect/rusty_fuzz"
+repository = "https://github.com/pwnandprotect/rustyfuzz"
 
 [lib]
-name = "rusty_fuzz_lib"
+name = "rustyfuzz_lib"
 path = "src/lib.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

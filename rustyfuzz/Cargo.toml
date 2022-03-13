@@ -1,10 +1,10 @@
 [package]
-name = "rusty_fuzz"
+name = "rustyfuzz"
 version = "0.1.0"
 edition = "2021"
 authors = ["maikroservice <maikroservice@gmail.com>"]
 license = "MIT"
-repository = "https://github.com/pwnandprotect/rusty_fuzz"
+repository = "https://github.com/pwnandprotect/rustyfuzz"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -15,4 +15,4 @@ reqwest = { version = "0.11.9" }
 term-table = "1.3.2"
 tokio = { version = "1", features = ["full"] }
 indicatif = "0.16.2"
-#rusty_fuzz_lib = "1.0.0"
+#rustyfuzz_lib = "1.0.0"
